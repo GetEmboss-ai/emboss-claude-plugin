@@ -36,9 +36,10 @@ to 5-page forms. If Emboss tools are missing or a tool returns
   Poll `get_job` / `get_batch` about every 20 seconds and tell the user it is
   still running rather than going quiet.
 - Present every `download_url` as a plain link the user can click.
-- On a 402 (`over_free_tier` or similar), explain it using the response's
-  `billing_url`: "Your free forms for this month are used up; add a card at
-  `<billing_url>`."
+- On a 402, relay the tool's `message` and point at `billing_url`: for
+  `over_free_tier` explain that this month's free forms are used up; for
+  `over_page_cap` explain that the form is over the 5-page free limit and a
+  payment method is needed to continue.
 - On `unsupported_file`, tell the user to export the document to PDF first;
   Emboss only accepts PDFs.
 - Never paste long context text back into the chat. Summarize what was sent

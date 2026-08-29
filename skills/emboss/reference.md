@@ -21,8 +21,9 @@ Status of one form.
 - `form_id` (required).
 
 When the form is `ready`, returns its `fields` (each with `id`, `label`,
-`kind`, `required`, and `options: [{value, label}]` for choice fields) and a
-`download_url` for the fillable PDF.
+`kind`, `required`, `options: [{value, label}]` for choice fields, `group`
+for fields that belong to the same exclusive group, and `description` when
+the form gives one) and a `download_url` for the fillable PDF.
 
 ## get_usage
 
@@ -55,6 +56,8 @@ Fill a ready form with values.
 - `values` (required): a dict keyed by field id or field label. Checkboxes
   take `yes`/`no`; choice fields take one of the field's option labels or
   values.
+- `flatten` (optional): reserved for a future release. Do not set it; passing
+  `true` returns `bad_request`.
 
 Returns a `download_url`, the `applied` values, and any `unmatched` keys
 (labels that didn't match a field, or values that didn't match a checkbox
@@ -127,12 +130,25 @@ Errors carry a machine-readable `code` and a human `message`:
   reconnect Emboss (see SETUP.md).
 - `not_found`: the id doesn't exist, or isn't in this user's account.
 - `not_ready`: the form/job/batch is still processing; try again shortly.
-- `over_free_tier`: this month's free operations are used up; a `billing_url`
-  is included, use it in the message you show the user.
-- `over_page_cap`: the form is over the free-tier 5-page limit.
+- `over_free_tier`: this month's free operations are used up; relay the
+  message and the `billing_url`.
+- `over_page_cap`: the form is over the free-tier 5-page limit; relay the
+  message and the `billing_url`.
 - `unsupported_file`: not a PDF; tell the user to export to PDF first.
-- `bad_request`: malformed or conflicting arguments.
-- `fetch_failed`: a given URL couldn't be downloaded.
+- `bad_request`: malformed or conflicting arguments; check the message for
+  which argument and fix the call.
+- `fetch_failed`: a given URL couldn't be downloaded; ask the user for a
+  working public link, or a pasted/base64 alternative.
+- `nothing_to_fill` (`fill_form`): none of the given values matched a field;
+  show `get_form`'s fields and ask the user which ones to fill.
+- `no_mapping` (`fill_batch`): no spreadsheet column matched a form field;
+  pass an explicit `mapping` (see `suggest_mapping`).
+- `too_large`: the upload is over its size limit (PDF, context text, or CSV);
+  ask the user for a smaller file or a link instead of inline content.
+- `rate_limited`: too many requests; wait a minute and retry.
+- `server_error`: Emboss had a problem processing the request; retry once,
+  and tell the user if it persists.
+- `unauthenticated`: no valid session; see SETUP.md to (re)connect Emboss.
 
 402 responses (`over_free_tier`, `over_page_cap`, and similar billing
 errors) include a `billing_url`.
