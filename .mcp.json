@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "emboss": { "type": "http", "url": "https://api.getemboss.ai/mcp" }
+  }
+}

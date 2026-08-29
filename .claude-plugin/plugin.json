@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "emboss",
+  "displayName": "Emboss",
+  "version": "1.0.0",
+  "description": "Turn flat PDFs into fillable forms and fill them from your data, notes, documents, or a spreadsheet, using the Emboss API.",
+  "author": { "name": "Edwin Orange", "email": "edwin@getemboss.ai", "url": "https://getemboss.ai" },
+  "homepage": "https://getemboss.ai/docs/claude",
+  "repository": "https://github.com/GetEmboss-ai/emboss-claude-plugin",
+  "license": "MIT",
+  "keywords": ["pdf", "forms", "fillable", "form-filling", "acroform", "batch"]
+}

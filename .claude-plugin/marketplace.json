@@ -1,0 +1,19 @@
+{
+  "name": "getemboss",
+  "owner": { "name": "Emboss", "email": "edwin@getemboss.ai", "url": "https://getemboss.ai" },
+  "description": "Plugins from Emboss, the PDF form-filling API.",
+  "plugins": [
+    {
+      "name": "emboss",
+      "source": "./",
+      "description": "Turn flat PDFs into fillable forms and fill them from your data, notes, documents, or a spreadsheet.",
+      "version": "1.0.0",
+      "author": { "name": "Edwin Orange" },
+      "homepage": "https://getemboss.ai/docs/claude",
+      "repository": "https://github.com/GetEmboss-ai/emboss-claude-plugin",
+      "license": "MIT",
+      "category": "productivity",
+      "keywords": ["pdf", "forms", "fillable"]
+    }
+  ]
+}
