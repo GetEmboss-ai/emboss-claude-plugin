@@ -43,4 +43,12 @@ if command -v claude >/dev/null 2>&1; then
 else
   echo "claude CLI not found; skipping plugin validate"
 fi
+python3 -c "import json,sys; json.load(open('server.json'))" || { echo "invalid JSON: server.json"; fail=1; }
+python3 - <<'EOF' || fail=1
+import json
+s = json.load(open("server.json"))
+assert s["name"].startswith("io.github."), "server.json name must start with io.github."
+assert s["remotes"][0]["url"] == "https://api.getemboss.ai/mcp", "server.json remote url must be exact"
+print("server.json ok")
+EOF
 exit $fail

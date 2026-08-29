@@ -1,0 +1,13 @@
+name: release
+on:
+  push:
+    tags: ["v*"]
+jobs:
+  zip:
+    runs-on: ubuntu-latest
+    permissions: { contents: write }
+    steps:
+      - uses: actions/checkout@v4
+      - run: mkdir -p dist/emboss && cp skills/emboss/SKILL.md skills/emboss/reference.md dist/emboss/ && (cd dist && zip -r emboss-skill.zip emboss)
+      - uses: softprops/action-gh-release@v2
+        with: { files: dist/emboss-skill.zip }
