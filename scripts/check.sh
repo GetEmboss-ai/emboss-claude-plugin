@@ -36,19 +36,10 @@ print("skill ok")
 EOF
 # `claude plugin validate .` validates only the marketplace manifest when both
 # .claude-plugin/plugin.json and .claude-plugin/marketplace.json are present in the
-# same directory. To also strictly validate the plugin manifest plus the skills,
-# agents, and commands it points at, validate a scratch copy of the repo with
-# marketplace.json removed so the CLI falls through to the plugin manifest instead.
+# same directory, so validate the plugin manifest separately by path.
 if command -v claude >/dev/null 2>&1; then
   claude plugin validate . --strict || fail=1
-  tmpdir=$(mktemp -d)
-  trap 'rm -rf "$tmpdir"' EXIT
-  cp -R . "$tmpdir/repo"
-  rm -rf "$tmpdir/repo/.git"
-  rm -f "$tmpdir/repo/.claude-plugin/marketplace.json"
-  claude plugin validate "$tmpdir/repo" --strict || fail=1
-  rm -rf "$tmpdir"
-  trap - EXIT
+  claude plugin validate .claude-plugin/plugin.json --strict || fail=1
 else
   echo "claude CLI not found; skipping plugin validate"
 fi
