@@ -17,7 +17,7 @@ Then run `/mcp` and sign in to Emboss to connect your account.
 
 ## Install in Claude.ai and Claude Desktop
 
-Claude.ai and Claude Desktop connect to Emboss through the custom connector button rather than the plugin marketplace. See [https://getemboss.ai/docs/claude](https://getemboss.ai/docs/claude) for the setup steps.
+Claude.ai and Claude Desktop connect to Emboss through the custom connector button rather than the plugin marketplace. See [https://getemboss.ai/docs/claude](https://getemboss.ai/docs/claude) for the setup steps. To give Claude the Emboss skill directly, download [emboss-skill.zip](https://github.com/GetEmboss-ai/emboss-claude-plugin/releases/latest/download/emboss-skill.zip) and upload it as a skill.
 
 ## Pricing
 

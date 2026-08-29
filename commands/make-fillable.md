@@ -1,5 +1,6 @@
 ---
 description: Turn a flat PDF into a fillable form with Emboss
+argument-hint: <path or https URL to a PDF>
 ---
 
 Turn the PDF at $ARGUMENTS into a fillable form with Emboss. If the argument

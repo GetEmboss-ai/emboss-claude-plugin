@@ -1,5 +1,6 @@
 ---
 description: Fill a PDF form with Emboss
+argument-hint: <form id, path, or URL>
 ---
 
 Fill the PDF form at $ARGUMENTS with Emboss. Create or find the form

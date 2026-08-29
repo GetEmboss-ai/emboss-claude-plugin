@@ -8,6 +8,14 @@ jobs:
     permissions: { contents: write }
     steps:
       - uses: actions/checkout@v4
-      - run: mkdir -p dist/emboss && cp skills/emboss/SKILL.md skills/emboss/reference.md dist/emboss/ && (cd dist && zip -r emboss-skill.zip emboss)
+      - run: |
+          mkdir -p dist/emboss
+          cp skills/emboss/SKILL.md skills/emboss/reference.md dist/emboss/
+          python3 -c "
+          import re
+          t = open('skills/emboss-setup/SKILL.md').read()
+          open('dist/emboss/SETUP.md', 'w').write(re.sub(r'^---\n.*?\n---\n', '', t, count=1, flags=re.S))
+          "
+          (cd dist && zip -r emboss-skill.zip emboss)
       - uses: softprops/action-gh-release@v2
         with: { files: dist/emboss-skill.zip }

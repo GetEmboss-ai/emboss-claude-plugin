@@ -1,5 +1,6 @@
 ---
 description: Fill a form once per row of a CSV with Emboss
+argument-hint: <form id> [csv path or URL]
 ---
 
 Fill the form $ARGUMENTS once per row of a CSV with Emboss. Ask for the CSV

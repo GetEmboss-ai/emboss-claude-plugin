@@ -59,10 +59,10 @@ Fill a ready form with values.
 - `flatten` (optional): reserved for a future release. Do not set it; passing
   `true` returns `bad_request`.
 
-Returns a `download_url`, the `applied` values, and any `unmatched` keys
+Returns a `download_url`, the `applied` values, any `unmatched` keys
 (labels that didn't match a field, or values that didn't match a checkbox
-word or option; ask the user about those). Billed as one fill; the first 5
-each month are free.
+word or option; ask the user about those), and `warnings`. Billed as one
+fill; the first 5 each month are free.
 
 ## fill_form_from_context
 
@@ -76,7 +76,9 @@ Fill a form using answers pulled out of documents or notes.
 
 At least one of `context_text` / `context_urls` is required. Returns a
 `job_id`; poll `get_job` about every 20 seconds. Billed as one context fill;
-the first 5 each month are free.
+the first 5 each month are free. Passing `pdf_url`/`pdf_base64` instead of
+`form_id` also creates the form, so that path is billed as one form creation
+plus one context fill.
 
 ## get_job
 
@@ -127,7 +129,7 @@ finished row (first 100), and a `zip_url` once the batch is done.
 Errors carry a machine-readable `code` and a human `message`:
 
 - `insufficient_scope`: the connection doesn't have the needed permission;
-  reconnect Emboss (see SETUP.md).
+  reconnect Emboss (see SETUP.md in this folder, or the emboss-setup skill).
 - `not_found`: the id doesn't exist, or isn't in this user's account.
 - `not_ready`: the form/job/batch is still processing; try again shortly.
 - `over_free_tier`: this month's free operations are used up; relay the
@@ -148,7 +150,8 @@ Errors carry a machine-readable `code` and a human `message`:
 - `rate_limited`: too many requests; wait a minute and retry.
 - `server_error`: Emboss had a problem processing the request; retry once,
   and tell the user if it persists.
-- `unauthenticated`: no valid session; see SETUP.md to (re)connect Emboss.
+- `unauthenticated`: no valid session; see SETUP.md in this folder, or the
+  emboss-setup skill, to (re)connect Emboss.
 
 402 responses (`over_free_tier`, `over_page_cap`, and similar billing
 errors) include a `billing_url`.

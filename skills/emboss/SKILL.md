@@ -1,6 +1,6 @@
 ---
 name: emboss
-description: Fill PDF forms with Emboss. Use when the user has a flat or scanned PDF form and wants it fillable, wants a PDF form filled from notes, a document, or pasted text, wants one form filled for every row of a spreadsheet or CSV, or asks about AcroForm fields, checkboxes, or signature fields in a PDF. Requires the Emboss MCP connector (see SETUP.md).
+description: Fill PDF forms with Emboss. Use when the user has a flat or scanned PDF form and wants it fillable, wants a PDF form filled from notes, a document, or pasted text, wants one form filled for every row of a spreadsheet or CSV, or asks about AcroForm fields, checkboxes, or signature fields in a PDF. Requires the Emboss MCP connector (see the emboss-setup skill).
 ---
 
 # Emboss
@@ -10,7 +10,8 @@ values, from documents or notes, or from a spreadsheet. Every operation is
 billed to the user's Emboss account. The first 5 form creations, 5 context
 fills, and 5 standard fills each month are free; free operations are limited
 to 5-page forms. If Emboss tools are missing or a tool returns
-`insufficient_scope` / `unauthenticated`, see SETUP.md.
+`insufficient_scope` / `unauthenticated`, see SETUP.md in this folder, or
+the emboss-setup skill in Claude Code.
 
 ## Which tool
 
@@ -91,7 +92,8 @@ preferred, inline text (`context_text`, `csv_text`) works for small content.
 - Show the proposed column-to-field mapping and confirm it with the user
   before proceeding (or take their corrected mapping).
 - Call `fill_batch` with the confirmed `mapping`.
-- Poll `get_batch` with the returned `batch_id` every ~20 seconds until done.
+- Poll `get_batch` with the returned `batch_id` every ~20 seconds until
+  `status` is `complete` or `failed`.
 - Say back: "Filled N of M rows. Here's the zip: `<zip_url>`" and list any
   per-row errors.
 

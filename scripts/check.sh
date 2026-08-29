@@ -21,17 +21,23 @@ EOF
 if grep -rIl $'\xe2\x80\x94' --exclude-dir=.git --exclude-dir=node_modules . ; then echo "em dash found"; fail=1; fi
 python3 - <<'EOF' || fail=1
 import re
-t = open("skills/emboss/SKILL.md").read()
-m = re.match(r"---\n(.*?)\n---\n", t, re.S)
-assert m, "SKILL.md needs YAML frontmatter"
-fm = dict(l.split(":", 1) for l in m.group(1).splitlines() if ":" in l)
-name = fm["name"].strip(); desc = fm["description"].strip()
-assert re.fullmatch(r"[a-z0-9-]{1,64}", name), name
-assert "anthropic" not in name and "claude" not in name
-assert 0 < len(desc) <= 1024 and "<" not in desc
-for trigger in ("fillable", "PDF form", "spreadsheet", "AcroForm"):
-    assert trigger.lower() in desc.lower(), "description must mention " + trigger
-assert len(t.splitlines()) <= 300, "SKILL.md must stay under 300 lines"
+
+def check_frontmatter(path, require_triggers=False):
+    t = open(path).read()
+    m = re.match(r"---\n(.*?)\n---\n", t, re.S)
+    assert m, path + " needs YAML frontmatter"
+    fm = dict(l.split(":", 1) for l in m.group(1).splitlines() if ":" in l)
+    name = fm["name"].strip(); desc = fm["description"].strip()
+    assert re.fullmatch(r"[a-z0-9-]{1,64}", name), name
+    assert "anthropic" not in name and "claude" not in name
+    assert 0 < len(desc) <= 1024 and "<" not in desc
+    if require_triggers:
+        for trigger in ("fillable", "PDF form", "spreadsheet", "AcroForm"):
+            assert trigger.lower() in desc.lower(), "description must mention " + trigger
+    assert len(t.splitlines()) <= 300, path + " must stay under 300 lines"
+
+check_frontmatter("skills/emboss/SKILL.md", require_triggers=True)
+check_frontmatter("skills/emboss-setup/SKILL.md")
 print("skill ok")
 EOF
 # `claude plugin validate .` validates only the marketplace manifest when both
