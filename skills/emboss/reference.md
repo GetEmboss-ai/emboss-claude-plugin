@@ -156,6 +156,8 @@ Errors carry a machine-readable `code` and a human `message`:
   reconnect Emboss (see SETUP.md in this folder, or the emboss-setup skill).
 - `not_found`: the id doesn't exist, or isn't in this user's account.
 - `not_ready`: the form/job/batch is still processing; try again shortly.
+  For `send_fax` by `job_id` or `form_id`, poll `get_job` or `get_form` until
+  ready, then send again.
 - `over_free_tier`: this month's free operations are used up; relay the
   message and the `billing_url`.
 - `over_page_cap`: the form is over the free-tier 5-page limit; relay the
@@ -176,8 +178,6 @@ Errors carry a machine-readable `code` and a human `message`:
   cap is reached; tell the user and do not retry the same number.
 - `provider_unavailable` (`send_fax`): the fax provider did not accept the
   job and nothing was charged; retry once after a minute.
-- `not_ready` (`send_fax`): the job or form is still processing; poll
-  `get_job` or `get_form`, then send again.
 - `server_error`: Emboss had a problem processing the request; retry once,
   and tell the user if it persists.
 - `unauthenticated`: no valid session; see SETUP.md in this folder, or the
