@@ -1,12 +1,12 @@
 ---
 name: emboss
-description: Fill PDF forms with Emboss. Use when the user has a flat or scanned PDF form and wants it fillable, wants a PDF form filled from notes, a document, or pasted text, wants one form filled for every row of a spreadsheet or CSV, or asks about AcroForm fields, checkboxes, or signature fields in a PDF. Requires the Emboss MCP connector (see the emboss-setup skill).
+description: Fill PDF forms with Emboss. Use when the user has a flat or scanned PDF form and wants it fillable, wants a PDF form filled from notes, a document, or pasted text, wants one form filled for every row of a spreadsheet or CSV, wants a finished PDF faxed to a number, or asks about AcroForm fields, checkboxes, or signature fields in a PDF. Requires the Emboss MCP connector (see the emboss-setup skill).
 ---
 
 # Emboss
 
 Emboss turns flat PDF forms into fillable AcroForm PDFs and fills them from
-values, from documents or notes, or from a spreadsheet. Every operation is
+values, from documents or notes, or from a spreadsheet, and faxes a finished PDF to any fax number. Every operation is
 billed to the user's Emboss account. The first 5 form creations, 5 context
 fills, and 5 standard fills each month are free; free operations are limited
 to 5-page forms. If Emboss tools are missing or a tool returns
@@ -23,6 +23,7 @@ the emboss-setup skill in Claude Code.
 | Fill one form per row of a spreadsheet/CSV | `suggest_mapping`, confirm the mapping with the user, then `fill_batch`, then poll `get_batch` |
 | Check remaining free operations or billing | `get_usage` |
 | Reuse a form already uploaded | `list_forms` first, instead of `create_form` |
+| Fax a finished PDF to a number | `send_fax` with the form's `download_url` as `pdf_url` (or a PDF as `pdf_base64`) and `to` in E.164 form, then poll `get_fax` |
 
 ## Rules
 
@@ -48,6 +49,10 @@ the emboss-setup skill in Claude Code.
   full.
 - Only call `delete_form` when the user explicitly asks to delete a form.
   It is permanent.
+- Before `send_fax`, confirm the destination number with the user and show
+  it back in E.164 form (for example +15025551212). Faxes are billed per page
+  at delivery; a failed fax is not charged. Poll `get_fax` about every 20
+  seconds until `status` is `delivered` or `failed`.
 
 ## Getting the PDF in
 

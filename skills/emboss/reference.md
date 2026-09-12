@@ -1,6 +1,6 @@
 # Emboss tool reference
 
-Argument details for the 11 Emboss MCP tools. See SKILL.md for when to use
+Argument details for the Emboss MCP tools. See SKILL.md for when to use
 each one and how to talk about the results.
 
 ## list_forms
@@ -124,6 +124,29 @@ Progress of a `fill_batch` run.
 Returns `status`, `total`, `filled`, `failed`, a `download_url` per
 finished row (first 100), and a `zip_url` once the batch is done.
 
+## send_fax
+
+Fax a PDF to a fax number. Billed per page at delivery; a failed fax is not
+charged.
+
+- `to` (required): destination in E.164 form, for example `+15025551212`.
+- `pdf_url` or `pdf_base64` (exactly one required): the PDF to send. A form's
+  `download_url` from `get_form`, `fill_form`, or `get_job` works as `pdf_url`.
+
+Returns `job_id`, `status` (`working`), `pages`, `price_cents`, and
+`destination_masked`. Poll `get_fax` with the `job_id`.
+
+## get_fax
+
+Status and receipt of a `send_fax` job.
+
+- `job_id` (required).
+
+Returns a receipt with `status` (`working`, `delivered`, `failed`, or
+`expired`), `to_masked`, `pages`, `provider`, `submitted_at`, and when
+delivered a `price`; a failed or expired job carries `error` (category,
+reason, `retryable`) and `refund` (`mode`, `state`).
+
 ## Error codes
 
 Errors carry a machine-readable `code` and a human `message`:
@@ -148,6 +171,10 @@ Errors carry a machine-readable `code` and a human `message`:
 - `too_large`: the upload is over its size limit (PDF, context text, or CSV);
   ask the user for a smaller file or a link instead of inline content.
 - `rate_limited`: too many requests; wait a minute and retry.
+- `refused` (`send_fax`): the destination is blocked or the per-destination
+  cap is reached; tell the user and do not retry the same number.
+- `provider_unavailable` (`send_fax`): the fax provider did not accept the
+  job and nothing was charged; retry once after a minute.
 - `server_error`: Emboss had a problem processing the request; retry once,
   and tell the user if it persists.
 - `unauthenticated`: no valid session; see SETUP.md in this folder, or the

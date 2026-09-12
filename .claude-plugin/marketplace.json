@@ -6,14 +6,14 @@
     {
       "name": "emboss",
       "source": "./",
-      "description": "Turn flat PDFs into fillable forms and fill them from your data, notes, documents, or a spreadsheet.",
-      "version": "1.0.0",
+      "description": "Emboss turns any PDF form into a fillable one, fills it from data or supporting documents, reads a filled form back, and faxes the result to any fax number.",
+      "version": "1.1.0",
       "author": { "name": "Edwin Orange" },
       "homepage": "https://getemboss.ai/docs/claude",
       "repository": "https://github.com/GetEmboss-ai/emboss-claude-plugin",
       "license": "MIT",
       "category": "productivity",
-      "keywords": ["pdf", "forms", "fillable"]
+      "keywords": ["pdf", "forms", "fillable", "fax"]
     }
   ]
 }

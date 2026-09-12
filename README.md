@@ -1,10 +1,10 @@
 # Emboss
 
-Turn flat PDFs into fillable forms and fill them, right from Claude.
+Turn flat PDFs into fillable forms, fill them, and fax them, right from Claude.
 
 ## What it does
 
-Emboss detects the fields in a flat PDF and turns it into a real fillable form. It can then fill that form for you using data, notes, or documents you provide, or a spreadsheet of rows for batch filling. Everything runs through the Emboss API, so results depend on what you send it and how the source document is structured.
+Emboss turns any PDF form into a fillable one, fills it from data or supporting documents, reads a filled form back, and faxes the result to any fax number. Everything runs through the Emboss API, so results depend on what you send it and how the source document is structured.
 
 ## Install in Claude Code
 
