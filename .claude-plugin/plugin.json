@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "emboss",
   "displayName": "Emboss",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Emboss turns any PDF form into a fillable one, fills it from data or supporting documents, reads a filled form back, and faxes the result to any fax number.",
   "author": { "name": "Edwin Orange", "email": "edwin@getemboss.ai", "url": "https://getemboss.ai" },
   "homepage": "https://getemboss.ai/docs/claude",

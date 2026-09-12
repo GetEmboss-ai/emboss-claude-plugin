@@ -130,8 +130,9 @@ Fax a PDF to a fax number. Billed per page at delivery; a failed fax is not
 charged.
 
 - `to` (required): destination in E.164 form, for example `+15025551212`.
-- `pdf_url` or `pdf_base64` (exactly one required): the PDF to send. A form's
-  `download_url` from `get_form`, `fill_form`, or `get_job` works as `pdf_url`.
+- Exactly one of `job_id` (a ready `fill_form_from_context` or
+  `commit_proposal` job; its filled PDF is faxed), `form_id` (a ready form;
+  its fillable PDF is faxed), `pdf_url`, or `pdf_base64`.
 
 Returns `job_id`, `status` (`working`), `pages`, `price_cents`, and
 `destination_masked`. Poll `get_fax` with the `job_id`.
@@ -175,6 +176,8 @@ Errors carry a machine-readable `code` and a human `message`:
   cap is reached; tell the user and do not retry the same number.
 - `provider_unavailable` (`send_fax`): the fax provider did not accept the
   job and nothing was charged; retry once after a minute.
+- `not_ready` (`send_fax`): the job or form is still processing; poll
+  `get_job` or `get_form`, then send again.
 - `server_error`: Emboss had a problem processing the request; retry once,
   and tell the user if it persists.
 - `unauthenticated`: no valid session; see SETUP.md in this folder, or the
