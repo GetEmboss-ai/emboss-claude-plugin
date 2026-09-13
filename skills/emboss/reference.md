@@ -239,7 +239,8 @@ Structural facts about one artifact: no text, no field values.
 
 Returns page count, each page's size and rotation, and whether the PDF is
 encrypted, has form fields, has annotations, has outlines, has embedded
-files, or has JavaScript.
+files, or has JavaScript. Also returns the PDF version, the file's mime
+type, its size in bytes, and its sha256 hash.
 
 ## Artifacts
 
