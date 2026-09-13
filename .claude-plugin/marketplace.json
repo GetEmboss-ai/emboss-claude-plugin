@@ -7,7 +7,7 @@
       "name": "emboss",
       "source": "./",
       "description": "Emboss turns any PDF form into a fillable one, fills it from data or supporting documents, reads a filled form back, and faxes the result to any fax number.",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "author": { "name": "Edwin Orange" },
       "homepage": "https://getemboss.ai/docs/claude",
       "repository": "https://github.com/GetEmboss-ai/emboss-claude-plugin",

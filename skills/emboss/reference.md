@@ -86,8 +86,9 @@ Status of a `fill_form_from_context` job.
 
 - `job_id` (required).
 
-When ready, returns `download_url`, `filled` (field count), `dropped`, and
-any `warnings`.
+When ready, returns `download_url`, `filled` (field count), `dropped`, any
+`warnings`, and `artifacts`: one entry per file, each with `artifact_id`,
+`role` (`filled`, `receipt`, or `package`), and `mime_type`.
 
 ## suggest_mapping
 
@@ -130,12 +131,16 @@ Fax a PDF to a fax number. Billed per page at delivery; a failed fax is not
 charged.
 
 - `to` (required): destination in E.164 form, for example `+15025551212`.
-- Exactly one of `job_id` (a ready `fill_form_from_context` or
-  `commit_proposal` job; its filled PDF is faxed), `form_id` (a ready form;
-  its fillable PDF is faxed), `pdf_url`, or `pdf_base64`.
+- Exactly one of `artifact_id` (from any earlier result), `job_id` (a ready
+  `fill_form_from_context` or `commit_proposal` job; its filled PDF is
+  faxed), `form_id` (a ready form; its fillable PDF is faxed), `pdf_url`, or
+  `pdf_base64`.
 
-Returns `job_id`, `status` (`working`), `pages`, `price_cents`, and
-`destination_masked`. Poll `get_fax` with the `job_id`.
+Returns `job_id`, `status` (`working`), `pages`, `price_cents`,
+`destination_masked`, and `artifact_id` (the transmitted copy) and
+`source_artifact_ids`. A repeat of the same artifact to the same
+destination within ten minutes returns the same job with
+`deduplicated: true`. Poll `get_fax` with the `job_id`.
 
 ## get_fax
 
@@ -144,9 +149,23 @@ Status and receipt of a `send_fax` job.
 - `job_id` (required).
 
 Returns a receipt with `status` (`working`, `delivered`, `failed`, or
-`expired`), `to_masked`, `pages`, `provider`, `submitted_at`, and when
-delivered a `price`; a failed or expired job carries `error` (category,
-reason, `retryable`) and `refund` (`mode`, `state`).
+`expired`), `to_masked`, `pages`, `provider`, `submitted_at`, `artifact_id`,
+and `source_artifact_ids`; when delivered a `price`; a failed or expired job
+carries `error` (category, reason, `retryable`) and `refund` (`mode`,
+`state`).
+
+## Artifacts
+
+Every result that hands back a file carries an `artifact_id`: `create_form`,
+`get_form` (plus `source_artifact_id` when the form came from another
+file), `fill_form`, `fill_form_from_context`/`get_job`, `get_batch` (per
+row), and `send_fax`/`get_fax`. Chain operations by passing that id forward
+(for example `send_fax` with `artifact_id`) instead of downloading and
+re-uploading the file. `get_job` also returns `artifacts`, one entry per
+file with `artifact_id`, `role` (`filled`, `receipt`, or `package`), and
+`mime_type`. Under ephemeral processing a file is deleted after its
+retention window; using its `artifact_id` after that returns the `gone`
+error code.
 
 ## Error codes
 
@@ -178,6 +197,9 @@ Errors carry a machine-readable `code` and a human `message`:
   cap is reached; tell the user and do not retry the same number.
 - `provider_unavailable` (`send_fax`): the fax provider did not accept the
   job and nothing was charged; retry once after a minute.
+- `gone` (`send_fax`): the file behind that `artifact_id` was deleted under
+  ephemeral processing; the error's `detail` gives the retention sentence.
+  Recreate or refetch the file and send again.
 - `server_error`: Emboss had a problem processing the request; retry once,
   and tell the user if it persists.
 - `unauthenticated`: no valid session; see SETUP.md in this folder, or the
