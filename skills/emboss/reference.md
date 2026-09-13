@@ -158,6 +158,89 @@ and `source_artifact_ids`; when delivered a `price`; a failed or expired job
 carries `error` (category, reason, `retryable`) and `refund` (`mode`,
 `state`).
 
+## Free PDF utilities
+
+Seven tools that operate directly on PDF bytes rather than a form: merge,
+compose, extract pages, delete pages, reorder pages, rotate pages, and
+inspect. They are free, do not count against any free-tier limit, and are
+not billed. Page selections (`pages` arguments) follow the same grammar as
+elsewhere in this reference: a comma-separated, 1-based list such as `1-3,7`;
+repeats are kept; an omitted `pages` means every page.
+
+Limits: at most twenty sources per call, up to one hundred pages per source,
+up to five hundred pages in an output, up to one hundred megabytes of
+sources together, and at most one hundred and twenty utility runs an hour.
+
+Outputs of a free utility are deleted sixty to seventy minutes after they
+are created, for every caller.
+
+### compose_pdf
+
+Build one PDF from several artifacts.
+
+- `sources` (required): a list of `{artifact_id, pages, rotate}`. `pages` is
+  a page selection (see above), omit for every page. `rotate` is `90`,
+  `180`, or `270`.
+
+Returns the new `artifact_id`.
+
+### merge_pdf
+
+Join whole PDFs in order.
+
+- `sources` (required): a list of `{artifact_id}`. For page selections, use
+  `compose_pdf` instead.
+
+Returns the new `artifact_id`.
+
+### extract_pages
+
+Keep only the named pages of one artifact.
+
+- `artifact_id` (required).
+- `pages` (required): a page selection (see above), for example `2,5-9`.
+
+Returns the new `artifact_id`.
+
+### delete_pages
+
+Remove the named pages from one artifact; every other page stays in order.
+
+- `artifact_id` (required).
+- `pages` (required): a page selection (see above), for example `1-2,17`.
+
+Returns the new `artifact_id`.
+
+### reorder_pages
+
+Reorder one artifact's pages.
+
+- `artifact_id` (required).
+- `order` (required): every page number, exactly once, in the new order.
+
+Returns the new `artifact_id`.
+
+### rotate_pages
+
+Rotate pages of one artifact.
+
+- `artifact_id` (required).
+- `rotations` (required): a list of `{pages, degrees}`, `pages` a page
+  selection (see above) and `degrees` one of `90`, `180`, `270`, added
+  clockwise to each page's current rotation.
+
+Returns the new `artifact_id`.
+
+### inspect_pdf
+
+Structural facts about one artifact: no text, no field values.
+
+- `artifact_id` (required).
+
+Returns page count, each page's size and rotation, and whether the PDF is
+encrypted, has form fields, has annotations, has outlines, has embedded
+files, or has JavaScript.
+
 ## Artifacts
 
 Every result that hands back a file carries an `artifact_id`: `create_form`,
@@ -202,13 +285,34 @@ Errors carry a machine-readable `code` and a human `message`:
   cap is reached; tell the user and do not retry the same number.
 - `provider_unavailable` (`send_fax`): the fax provider did not accept the
   job and nothing was charged; retry once after a minute.
-- `gone` (`send_fax`): the file behind that `artifact_id` was deleted under
-  ephemeral processing; the error's `detail` gives the retention sentence.
-  Recreate or refetch the file and send again.
+- `gone` (`send_fax`, or any free PDF utility): the file behind that
+  `artifact_id` was deleted under ephemeral processing; the error's `detail`
+  gives the retention sentence. Recreate or refetch the file and send again.
 - `server_error`: Emboss had a problem processing the request; retry once,
   and tell the user if it persists.
 - `unauthenticated`: no valid session; see SETUP.md in this folder, or the
   emboss-setup skill, to (re)connect Emboss.
+- `invalid_page_spec` (free PDF utilities): a `pages`/`order` argument isn't
+  a valid page selection; fix its grammar (see Free PDF utilities above).
+- `page_out_of_range` (free PDF utilities): a page number named in `pages`
+  or `order` doesn't exist in the source artifact.
+- `duplicate_page` (free PDF utilities): `order` repeats a page number; it
+  must name every page exactly once.
+- `missing_page` (free PDF utilities): `order` omits a page number from the
+  source artifact.
+- `empty_output` (free PDF utilities): the requested operation would leave
+  zero pages; adjust `pages`/`order` to keep at least one.
+- `pdf_required` (free PDF utilities): one of the sources isn't a PDF.
+- `too_many_pages` (free PDF utilities): a source is over the hundred-page
+  limit.
+- `too_many_inputs` (free PDF utilities): `sources` is over the twenty-entry
+  limit.
+- `file_too_large` (free PDF utilities): the sources together are over the
+  hundred-megabyte limit.
+- `pdf_encrypted` (free PDF utilities): the source PDF is password-protected;
+  ask the user for a decrypted copy.
+- `pdf_corrupt` (free PDF utilities): the source PDF could not be parsed;
+  ask the user for a valid file.
 
 402 responses (`over_free_tier`, `over_page_cap`, and similar billing
 errors) include a `billing_url`.
