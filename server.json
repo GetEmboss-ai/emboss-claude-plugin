@@ -1,13 +1,23 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.edwinorange/emboss",
-  "description": "Make any PDF form fillable, fill it from data or documents, read it back, and fax the result.",
-  "version": "1.5.0",
+  "title": "Emboss",
+  "description": "Turn any PDF form into a fillable one, fill it from data or documents, verify it, and fax it.",
+  "version": "1.5.1",
   "repository": {
     "url": "https://github.com/GetEmboss-ai/emboss-claude-plugin",
     "source": "github"
   },
   "websiteUrl": "https://getemboss.ai/docs/mcp-tools",
+  "icons": [
+    {
+      "src": "https://getemboss.ai/emboss-logo-512.png",
+      "mimeType": "image/png",
+      "sizes": [
+        "512x512"
+      ]
+    }
+  ],
   "remotes": [
     {
       "type": "streamable-http",
