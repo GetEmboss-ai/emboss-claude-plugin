@@ -21,7 +21,7 @@ Claude.ai and Claude Desktop connect to Emboss through the custom connector butt
 
 ## Pricing
 
-The first 5 form creations, 5 context fills, and 5 standard fills each month are free; free operations are limited to 5-page forms. See [/pricing](https://getemboss.ai/pricing) for full details.
+The first 5 form creations, 5 context fills, 5 standard fills, 5 checks, 5 read-backs and 5 packages each month are free; free operations are limited to 5-page forms. See [/pricing](https://getemboss.ai/pricing) for full details.
 
 ## Privacy
 

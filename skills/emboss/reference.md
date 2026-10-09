@@ -34,9 +34,14 @@ and the billing page link.
 
 Upload a PDF and detect its fields.
 
-- `pdf_url` or `pdf_base64` (exactly one required): a public https link, or
-  base64-encoded PDF bytes.
+- `pdf_url` or `pdf_base64` (exactly one, unless `library` is given): a
+  public https link, or base64-encoded PDF bytes.
+- `library` (optional): a `slug` from `find_form`, to start from a blank
+  form Emboss already keeps instead of an upload.
 - `title` (optional).
+- `retention` (optional): `ephemeral` or `account_default` (default: the
+  account's own setting). Under ephemeral processing, source and output
+  documents are deleted 60 to 70 minutes after the last activity on a form.
 
 Returns when detection finishes (usually under two minutes). Billed as one
 form creation; the first 5 each month are free.
@@ -73,6 +78,12 @@ Fill a form using answers pulled out of documents or notes.
 - `context_text` (optional): pasted notes or text.
 - `context_urls` (optional): up to 5 public https links to PDFs, Word docs,
   spreadsheets, images, or text files.
+- `library` (optional): a `slug` from `find_form`, in place of `form_id`
+  or a PDF.
+- `policy` (optional): `safe` (the default; write high and medium
+  confidence answers) or `strict` (high only).
+- `retention` (optional): `ephemeral` or `account_default`, as for
+  `create_form`.
 
 At least one of `context_text` / `context_urls` is required. Returns a
 `job_id`; poll `get_job` about every 20 seconds. Billed as one context fill;
@@ -80,15 +91,117 @@ the first 5 each month are free. Passing `pdf_url`/`pdf_base64` instead of
 `form_id` also creates the form, so that path is billed as one form creation
 plus one context fill.
 
+A job that finds none of the form's answers in the documents finishes
+`ready` with `no_values_found` in its `warnings` and a `message` saying why
+(a blurry or sideways photo, or a document that doesn't hold the answers).
+Relay the message. To try again, pass the same `form_id`, so only the fill
+is billed; on an account, a fill that found nothing isn't counted.
+
 ## get_job
 
-Status of a `fill_form_from_context` job.
+Status of a `fill_form_from_context`, `prepare_form`, or `commit_proposal`
+job.
 
 - `job_id` (required).
 
 When ready, returns `download_url`, `filled` (field count), `dropped`, any
 `warnings`, and `artifacts`: one entry per file, each with `artifact_id`,
 `role` (`filled`, `receipt`, or `package`), and `mime_type`.
+
+For a `prepare_form` job it also returns the `proposal_id`; for a
+`commit_proposal` job, the verification `result`, a `receipt_url`, and a
+`package_url` when a package was asked for. A ready job may carry
+`warnings` and a `message` (see `no_values_found` under
+`fill_form_from_context`).
+
+## find_form
+
+Search the library of blank US federal forms by name, number or alias
+(`w9`, `W-9`, `form w 9` and `taxpayer identification` all find the same
+form).
+
+- `query` (required): the user's whole query. Send it once, not as the
+  user types: each search spends one of the account's rate-limit slots.
+
+Returns each match's `slug`, `title`, `agency`, `revision` and page count.
+Pass a `slug` as `library` to `create_form`, `fill_form_from_context` or
+`prepare_form`. Free.
+
+## prepare_form
+
+Prepare a form from documents without writing anything yet: a proposal of
+every answer with its source, what is missing, and where documents
+disagree.
+
+- Same inputs as `fill_form_from_context`: `form_id`, `pdf_url` /
+  `pdf_base64`, or `library`, plus `context_text` and/or `context_urls`,
+  and optional `policy` and `retention`.
+
+Returns a `job_id` and a `proposal_id`; poll `get_job` about every 20
+seconds. Billed as one context fill; the first 5 each month are free.
+
+## get_proposal
+
+- `proposal_id` (required).
+
+Returns every field's state, its candidate values with their evidence, and
+the questions still open. Reading a proposal is free.
+
+## add_attachment
+
+Attach one document to a proposal, for a submission package.
+
+- `proposal_id` (required).
+- `file_url` or `file_base64` (exactly one required): PDF, PNG or JPEG.
+- `requirement` (optional): the name of an entry in the form's
+  `attachments_required` list that this document satisfies. A second
+  document for the same requirement replaces the first.
+
+At most 20 per proposal. Free: attachments are part of the
+already-billed prepare.
+
+## commit_proposal
+
+Write the answers, render the form with text that fits, check it, and
+return the PDF with a report and a receipt.
+
+- `proposal_id` (required).
+- `values` (optional): answers decided for fields still open, each
+  `{field_id, value, note}` (`note` optional).
+- `confirm` (optional): field ids whose proposed value is accepted as it
+  is.
+- `policy` (optional): `safe` or `strict`, overriding the proposal's own.
+- `package` (optional): `true` to also receive one submission package (the
+  filled form, the attachments in the order the form asks for them, and
+  the receipt), billed as one package.
+
+Returns a `job_id`; poll `get_job` for the download link, report, receipt
+and, when asked for, `package_url`. Free within the proposal's
+already-billed prepare, up to 10 commits per proposal. Checkboxes take
+`yes` or `no`; in a Yes/No pair, say yes to only one box.
+
+## verify_form
+
+Check a filled form: required fields, allowed options, consistent choices,
+text that fits, and empty signature boxes.
+
+- `form_id` (required).
+- `pdf_url` or `pdf_base64` (exactly one required): the filled PDF.
+
+Returns `complete`, `review_required`, `incomplete` or `failed` with the
+issues found. Billed as one check; the first 5 each month are free.
+
+## read_form
+
+Read the values out of a filled PDF form.
+
+- `pdf_url` or `pdf_base64` (exactly one required): the filled PDF.
+- `form_id` (optional): when known, each value also carries its label and
+  whether it was required, plus a completeness verdict.
+
+Returns every form box with its value and whether it is filled. Nothing is
+stored: read-back never keeps the file. Billed as one read-back; the first
+5 each month are free.
 
 ## suggest_mapping
 
@@ -277,6 +390,13 @@ Errors carry a machine-readable `code` and a human `message`:
   working public link, or a pasted/base64 alternative.
 - `nothing_to_fill` (`fill_form`): none of the given values matched a field;
   show `get_form`'s fields and ask the user which ones to fill.
+- `document_same_as_form` (`fill_form_from_context`, `prepare_form`): a
+  supporting document is the blank form itself, with nothing filled in;
+  relay the message and ask for the document that holds the answers.
+- `documents_deleted`: the form's files were already deleted under
+  ephemeral processing; ask the user to upload the form again.
+- `conflicting_values` (`fill_form`, `commit_proposal`): more than one box
+  in one Yes/No question was set to yes; ask which one the user meant.
 - `no_mapping` (`fill_batch`): no spreadsheet column matched a form field;
   pass an explicit `mapping` (see `suggest_mapping`).
 - `too_large`: the upload is over its size limit (PDF, context text, or CSV);
