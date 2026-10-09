@@ -94,8 +94,9 @@ plus one context fill.
 A job that finds none of the form's answers in the documents finishes
 `ready` with `no_values_found` in its `warnings` and a `message` saying why
 (a blurry or sideways photo, or a document that doesn't hold the answers).
-Relay the message. To try again, pass the same `form_id`, so only the fill
-is billed; on an account, a fill that found nothing isn't counted.
+Relay the message. To try again, pass the `form_id` that `get_job`
+returned, so only the fill is billed; on an account, a fill that found
+nothing isn't counted.
 
 ## get_job
 
@@ -104,9 +105,11 @@ job.
 
 - `job_id` (required).
 
-When ready, returns `download_url`, `filled` (field count), `dropped`, any
-`warnings`, and `artifacts`: one entry per file, each with `artifact_id`,
-`role` (`filled`, `receipt`, or `package`), and `mime_type`.
+Every job returns the `form_id` it fills: a fill that started from a PDF
+or a library form learns its form's id here. When ready, returns
+`download_url`, `filled` (field count), `dropped`, any `warnings`, and
+`artifacts`: one entry per file, each with `artifact_id`, `role`
+(`filled`, `receipt`, or `package`), and `mime_type`.
 
 For a `prepare_form` job it also returns the `proposal_id`; for a
 `commit_proposal` job, the verification `result`, a `receipt_url`, and a
@@ -395,8 +398,10 @@ Errors carry a machine-readable `code` and a human `message`:
   relay the message and ask for the document that holds the answers.
 - `documents_deleted`: the form's files were already deleted under
   ephemeral processing; ask the user to upload the form again.
-- `conflicting_values` (`fill_form`, `commit_proposal`): more than one box
-  in one Yes/No question was set to yes; ask which one the user meant.
+- `conflicting_values` (`fill_form`): more than one box in one Yes/No
+  question was set to yes; ask which one the user meant. `commit_proposal`
+  reports the same mistake as `bad_request`, naming the boxes in
+  `field_ids`.
 - `no_mapping` (`fill_batch`): no spreadsheet column matched a form field;
   pass an explicit `mapping` (see `suggest_mapping`).
 - `too_large`: the upload is over its size limit (PDF, context text, or CSV);
