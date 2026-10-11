@@ -6,12 +6,16 @@ description: Fill PDF forms with Emboss. Use when the user has a flat or scanned
 # Emboss
 
 Emboss turns flat PDF forms into fillable AcroForm PDFs and fills them from
-values, from documents or notes, or from a spreadsheet, and faxes a finished PDF to any fax number. Every operation is
-billed to the user's Emboss account. The first 5 form creations, 5 context
-fills, 5 standard fills, 5 checks, 5 read-backs and 5 packages each month are
-free; free operations are limited to 5-page forms. If Emboss tools are missing or a tool returns
-`insufficient_scope` / `unauthenticated`, see SETUP.md in this folder, or
-the emboss-setup skill in Claude Code.
+values, from documents or notes, or from a spreadsheet, and faxes a finished
+PDF to a US, Canadian or Mexican fax number. Paid operations are billed to the
+user's Emboss account; reads, attachments and the PDF page tools are free. The
+first 5 form creations, 5 context fills, 5 standard fills, 5 checks, 5
+read-backs and 5 packages each month are free when the job is 5 pages or fewer
+(a fill from documents counts the form and its documents together); a longer
+job is charged and does not use a free one. A job that fails is not charged.
+Account faxes need a payment method on file. If Emboss tools are missing or a
+tool returns `insufficient_scope` / `unauthenticated`, see SETUP.md in this
+folder, or the emboss-setup skill in Claude Code.
 
 ## Which tool
 
@@ -44,9 +48,13 @@ the emboss-setup skill in Claude Code.
   still running rather than going quiet.
 - Present every `download_url` as a plain link the user can click.
 - On a 402, relay the tool's `message` and point at `billing_url`: for
-  `over_free_tier` explain that this month's free forms are used up; for
-  `over_page_cap` explain that the form is over the 5-page free limit and a
-  payment method is needed to continue.
+  `over_free_tier` explain that this month's free operations are used up (for
+  `fill_batch`, its `rows` and `remaining` say how many rows the batch has and
+  how many free fills are left); for `over_page_cap` explain that the job is
+  over the 5-page free limit and a payment method is needed to continue; for
+  `card_required` explain that sending a fax needs a payment method on file.
+- When `get_job` reports `failed`, the job was not charged. If its `error`
+  code is `interrupted`, the job was cut off on Emboss's side: start it again.
 - On `unsupported_file`, tell the user to export the document to PDF first;
   Emboss only accepts PDFs.
 - When `get_job` comes back `ready` with `no_values_found` in its
@@ -71,9 +79,10 @@ the emboss-setup skill in Claude Code.
 - Only call `delete_form` when the user explicitly asks to delete a form.
   It is permanent.
 - Before `send_fax`, confirm the destination number with the user and show
-  it back in E.164 form (for example +15025551212). Faxes are billed per page
-  at delivery; a failed fax is not charged. Poll `get_fax` about every 20
-  seconds until `status` is `delivered` or `failed`.
+  it back in E.164 form (for example +15025551212); Emboss faxes to US,
+  Canadian and Mexican numbers. Faxes are billed per page at delivery and need
+  a payment method on file; a failed fax is not charged. Poll `get_fax` about
+  every 20 seconds until `status` is `delivered`, `failed` or `expired`.
 
 ## Getting the PDF in
 

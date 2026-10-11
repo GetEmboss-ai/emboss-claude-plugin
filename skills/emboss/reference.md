@@ -63,6 +63,8 @@ Fill a ready form with values.
   values.
 - `flatten` (optional): reserved for a future release. Do not set it; passing
   `true` returns `bad_request`.
+- `retention` (optional): accepted but changes nothing; the form keeps the
+  setting it was created with.
 
 Returns a `download_url`, the `applied` values, any `unmatched` keys
 (labels that didn't match a field, or values that didn't match a checkbox
@@ -73,19 +75,20 @@ fill; the first 5 each month are free.
 
 Fill a form using answers pulled out of documents or notes.
 
-- `form_id` (for a form already in the library) or `pdf_url`/`pdf_base64`
-  (to create and fill a new one), exactly one of the two forms.
-- `context_text` (optional): pasted notes or text.
-- `context_urls` (optional): up to 5 public https links to PDFs, Word docs,
-  spreadsheets, images, or text files.
-- `library` (optional): a `slug` from `find_form`, in place of `form_id`
-  or a PDF.
+- `form_id`, `pdf_url`/`pdf_base64`, or `library` (exactly one of the
+  three): `form_id` for a form already in the library, a PDF to create and
+  fill a new one, or a `slug` from `find_form`.
+- `context_text` (optional): pasted notes or text, up to 200,000 characters.
+- `context_urls` (optional): public https links to PDFs, Word docs,
+  spreadsheets, images, or text files, each up to 10 MB.
 - `policy` (optional): `safe` (the default; write high and medium
   confidence answers) or `strict` (high only).
-- `retention` (optional): `ephemeral` or `account_default`, as for
-  `create_form`.
+- `retention` (optional): `ephemeral` or `account_default`; it applies only
+  when this call creates the form.
 
-At least one of `context_text` / `context_urls` is required. Returns a
+At least one of `context_text` / `context_urls` is required, and the call
+takes at most 5 supporting documents in total, counting pasted text as one.
+Returns a
 `job_id`; poll `get_job` about every 20 seconds. Billed as one context fill;
 the first 5 each month are free. Passing `pdf_url`/`pdf_base64` instead of
 `form_id` also creates the form, so that path is billed as one form creation
@@ -110,6 +113,10 @@ or a library form learns its form's id here. When ready, returns
 `download_url`, `filled` (field count), `dropped`, any `warnings`, and
 `artifacts`: one entry per file, each with `artifact_id`, `role`
 (`filled`, `receipt`, or `package`), and `mime_type`.
+
+A `failed` job carries `error` (its `code` and `message`) and was not
+charged; the code `interrupted` means it was cut off on Emboss's side, so
+start it again.
 
 For a `prepare_form` job it also returns the `proposal_id`; for a
 `commit_proposal` job, the verification `result`, a `receipt_url`, and a
@@ -160,7 +167,7 @@ Attach one document to a proposal, for a submission package.
   `attachments_required` list that this document satisfies. A second
   document for the same requirement replaces the first.
 
-At most 20 per proposal. Free: attachments are part of the
+At most 20 per proposal and 20 MB in all. Free: attachments are part of the
 already-billed prepare.
 
 ## commit_proposal
@@ -191,7 +198,7 @@ text that fits, and empty signature boxes.
 - `form_id` (required).
 - `pdf_url` or `pdf_base64` (exactly one required): the filled PDF.
 
-Returns `complete`, `review_required`, `incomplete` or `failed` with the
+Returns `complete`, `review_required` or `incomplete` with the
 issues found. Billed as one check; the first 5 each month are free.
 
 ## read_form
@@ -211,7 +218,7 @@ stored: read-back never keeps the file. Billed as one read-back; the first
 Propose which spreadsheet column fills which form field.
 
 - `form_id` (required).
-- `csv_text` or `csv_url` (exactly one required). Only the header row
+- `csv_text` (up to 2 MB) or `csv_url` (up to 10 MB), exactly one required. Only the header row
   matters.
 
 Returns a `mapping` of `{column: field_id}` and `unmapped_columns`. Billed
@@ -224,13 +231,16 @@ don't call it directly.
 Fill the form once per spreadsheet row.
 
 - `form_id` (required).
-- `csv_text` or `csv_url` (exactly one required), up to 1000 rows.
+- `csv_text` (up to 2 MB) or `csv_url` (up to 10 MB), exactly one required, up to 1,000 rows.
 - `mapping` (optional): `{column: field_id}`. Omit it to use the suggested
   mapping (this runs `suggest_mapping` first, billed as one context fill).
+- `retention` (optional): accepted but changes nothing; the form keeps its own setting.
 
 Returns a `batch_id`. Batches up to 50 rows finish before this call
 returns; larger ones keep running, poll `get_batch`. Each row is billed as
-one fill.
+one fill. On an account with no payment method, a batch with more rows than
+the free fills left is refused whole (`over_free_tier`, with `rows` and
+`remaining`).
 
 ## get_batch
 
@@ -243,8 +253,9 @@ finished row (first 100), and a `zip_url` once the batch is done.
 
 ## send_fax
 
-Fax a PDF to a fax number. Billed per page at delivery; a failed fax is not
-charged.
+Fax a PDF to a US, Canadian or Mexican fax number. Billed per page at
+delivery; an account fax needs a payment method on file (`card_required`
+otherwise), and a failed fax is not charged.
 
 - `to` (required): destination in E.164 form, for example `+15025551212`.
 - Exactly one of `sources` (a list of up to twenty entries, each an
@@ -268,11 +279,12 @@ Status and receipt of a `send_fax` job.
 
 - `job_id` (required).
 
-Returns a receipt with `status` (`working`, `delivered`, `failed`, or
-`expired`), `to_masked`, `pages`, `provider`, `submitted_at`, `artifact_id`,
-and `source_artifact_ids`; when delivered a `price`; a failed or expired job
-carries `error` (category, reason, `retryable`) and `refund` (`mode`,
-`state`).
+Returns a receipt with `status` (`queued`, `working`, `delivered`, `failed`
+or `expired`; keep checking until it is `delivered`, `failed` or `expired`),
+`to_masked`, `pages`, `provider`, `submitted_at`, `artifact_id`, and
+`source_artifact_ids`; when delivered a `price`; a failed or expired job
+carries `failure_category`, `failure_reason`, `retryable` and `refund`
+(`mode`, `state`) at the top level.
 
 ## Free PDF utilities
 
@@ -360,8 +372,8 @@ type, its size in bytes, and its sha256 hash.
 
 ## Artifacts
 
-Every result that hands back a file carries an `artifact_id`: `create_form`,
-`get_form` (plus `source_artifact_id` when the form came from another
+Every result that hands back a file carries an `artifact_id`: `get_form`
+(plus `source_artifact_id` when the form came from another
 file), `fill_form`, `fill_form_from_context`/`get_job`, `get_batch` (per
 row), and `send_fax`/`get_fax`. Chain operations by passing that id forward
 (for example `send_fax` with `artifact_id`) instead of downloading and
@@ -384,8 +396,10 @@ Errors carry a machine-readable `code` and a human `message`:
   ready, then send again.
 - `over_free_tier`: this month's free operations are used up; relay the
   message and the `billing_url`.
-- `over_page_cap`: the form is over the free-tier 5-page limit; relay the
+- `over_page_cap`: the job is over the free-tier 5-page limit; relay the
   message and the `billing_url`.
+- `card_required` (`send_fax`): the account has no payment method on file;
+  relay the message and the `billing_url`.
 - `unsupported_file`: not a PDF; tell the user to export to PDF first.
 - `bad_request`: malformed or conflicting arguments; check the message for
   which argument and fix the call.
@@ -407,12 +421,14 @@ Errors carry a machine-readable `code` and a human `message`:
 - `too_large`: the upload is over its size limit (PDF, context text, or CSV);
   ask the user for a smaller file or a link instead of inline content.
 - `rate_limited`: too many requests; wait a minute and retry.
-- `refused` (`send_fax`): the destination is blocked or the per-destination
-  cap is reached; tell the user and do not retry the same number.
+- `refused` (`send_fax`): the number is malformed, outside the United States,
+  Canada and Mexico, or blocked; tell the user and do not retry the same
+  number. Too many faxes to one number in an hour come back as
+  `rate_limited`.
 - `provider_unavailable` (`send_fax`): the fax provider did not accept the
   job and nothing was charged; retry once after a minute.
 - `gone` (`send_fax`, or any free PDF utility): the file behind that
-  `artifact_id` was deleted under ephemeral processing; the error's `detail`
+  `artifact_id` was deleted under ephemeral processing; the error's `message`
   gives the retention sentence. Recreate or refetch the file and send again.
 - `server_error`: Emboss had a problem processing the request; retry once,
   and tell the user if it persists.
@@ -440,5 +456,5 @@ Errors carry a machine-readable `code` and a human `message`:
 - `pdf_corrupt` (free PDF utilities): the source PDF could not be parsed;
   ask the user for a valid file.
 
-402 responses (`over_free_tier`, `over_page_cap`, and similar billing
-errors) include a `billing_url`.
+402 responses (`over_free_tier`, `over_page_cap`, `card_required`) include
+a `billing_url`.
