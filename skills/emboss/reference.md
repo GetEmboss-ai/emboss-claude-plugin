@@ -427,8 +427,11 @@ Errors carry a machine-readable `code` and a human `message`:
 - `rate_limited`: too many requests; wait a minute and retry.
 - `refused` (`send_fax`): the number is malformed, outside the United States,
   Canada and Mexico, or blocked; tell the user and do not retry the same
-  number. Too many faxes to one number in an hour come back as
-  `rate_limited`.
+  number. Fax limits carry their own code: `destination_busy` (that number is
+  receiving too many faxes; wait until `until`), `account_paused` (this
+  account's faxes keep failing at the far end; wait until `until` and check
+  the number with the recipient), or `rate_limited` (too many requests in a
+  short time). Relay `message` and never resend before `until`.
 - `provider_unavailable` (`send_fax`): the fax provider did not accept the
   job and nothing was charged; retry once after a minute.
 - `gone` (`send_fax`, or any free PDF utility): the file behind that
