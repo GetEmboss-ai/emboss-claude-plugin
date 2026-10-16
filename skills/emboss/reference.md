@@ -28,7 +28,9 @@ the form gives one) and a `download_url` for the fillable PDF.
 ## get_usage
 
 No arguments. Returns this month's usage, how many free operations remain,
-and the billing page link.
+the billing page link, `payment_method_on_file` (whether a card is on file) and
+`fax_ready` (whether the account can send a fax today; faxes need a payment
+method, so check it before `send_fax`).
 
 ## create_form
 
@@ -285,6 +287,8 @@ or `expired`; keep checking until it is `delivered`, `failed` or `expired`),
 `source_artifact_ids`; when delivered a `price`; a failed or expired job
 carries `failure_category`, `failure_reason`, `retryable` and `refund`
 (`mode`, `state`) at the top level.
+
+A busy, unanswered or dropped call is retried automatically up to three more times over about 17 minutes while the status stays working; attempts, max_attempts and next_attempt_at say where it is. A failed or expired fax carries a plain failure_message saying what happened.
 
 ## Free PDF utilities
 
