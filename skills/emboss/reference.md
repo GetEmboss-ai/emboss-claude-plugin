@@ -63,8 +63,9 @@ Fill a ready form with values.
 - `values` (required): a dict keyed by field id or field label. Checkboxes
   take `yes`/`no`; choice fields take one of the field's option labels or
   values.
-- `flatten` (optional): reserved for a future release. Do not set it; passing
-  `true` returns `bad_request`.
+- `flatten` (optional): reserved; do not set it, passing `true` returns
+  `bad_request`. `fill_form` never flattens. It returns a fillable PDF. To
+  lock it, call `flatten_pdf` with the filled PDF's `artifact_id`.
 - `retention` (optional): accepted but changes nothing; the form keeps the
   setting it was created with.
 
@@ -292,9 +293,9 @@ A busy, unanswered or dropped call is retried automatically up to three more tim
 
 ## Free PDF utilities
 
-Seven tools that operate directly on PDF bytes rather than a form: merge,
-compose, extract pages, delete pages, reorder pages, rotate pages, and
-inspect. They are free, do not count against any free-tier limit, and are
+Eight tools that operate directly on PDF bytes rather than a form: merge,
+compose, extract pages, delete pages, reorder pages, rotate pages, inspect,
+and lock a filled form. They are free, do not count against any free-tier limit, and are
 not billed. Page selections (`pages` arguments) follow the same grammar as
 elsewhere in this reference: a comma-separated, 1-based list such as `1-3,7`;
 repeats are kept; an omitted `pages` means every page.
@@ -373,6 +374,21 @@ Returns page count, each page's size and rotation, and whether the PDF is
 encrypted, has form fields, has annotations, has outlines, has embedded
 files, or has JavaScript. Also returns the PDF version, the file's mime
 type, its size in bytes, and its sha256 hash.
+
+### flatten_pdf
+
+Lock a filled form. Every field's value, checkbox and comment becomes part of
+the page, so nothing stays editable. Links keep working, and the original
+artifact stays as it is.
+
+- `artifact_id` (required): the PDF to lock, usually the filled PDF from
+  `fill_form`.
+
+Returns the new `artifact_id` and a report: `fields_locked`,
+`annotations_locked`, `pages` and `calculated_left_blank`. A locked form
+cannot be read back or checked, so run `read_form` or `verify_form` first.
+It refuses a digitally signed PDF (`pdf_signed`) and a dynamic XFA form
+(`xfa_dynamic`). Free.
 
 ## Artifacts
 
