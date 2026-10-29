@@ -48,12 +48,16 @@ Upload a PDF and detect its fields.
 Returns when detection finishes (usually under two minutes). Billed as one
 form creation; the first 5 each month are free.
 
+Pass `dry_run=true` to rehearse this call without doing it: nothing is stored, charged or sent, and no AI is used. The answer says whether the real call would succeed or be refused, what it would cost, and what a rehearsal cannot check.
+
 ## delete_form
 
 - `form_id` (required).
 
 Permanently removes a form and its PDFs from the user's library. Only call
 this when the user explicitly asks.
+
+Pass `dry_run=true` to rehearse this call without doing it: nothing is stored, charged or sent, and no AI is used. The answer says whether the real call would succeed or be refused, what it would cost, and what a rehearsal cannot check.
 
 ## fill_form
 
@@ -73,6 +77,8 @@ Returns a `download_url`, the `applied` values, any `unmatched` keys
 (labels that didn't match a field, or values that didn't match a checkbox
 word or option; ask the user about those), and `warnings`. Billed as one
 fill; the first 5 each month are free.
+
+Pass `dry_run=true` to rehearse this call without doing it: nothing is stored, charged or sent, and no AI is used. The answer says whether the real call would succeed or be refused, what it would cost, and what a rehearsal cannot check.
 
 ## fill_form_from_context
 
@@ -103,6 +109,8 @@ A job that finds none of the form's answers in the documents finishes
 Relay the message. To try again, pass the `form_id` that `get_job`
 returned, so only the fill is billed; on an account, a fill that found
 nothing isn't counted.
+
+Pass `dry_run=true` to rehearse this call without doing it: nothing is stored, charged or sent, and no AI is used. The answer says whether the real call would succeed or be refused, what it would cost, and what a rehearsal cannot check.
 
 ## get_job
 
@@ -135,8 +143,11 @@ form).
 
 - `query` (required): the user's whole query. Send it once, not as the
   user types: each search spends one of the account's rate-limit slots.
+- `limit` (optional): matches per page, up to 50 (20 by default).
+- `cursor` (optional): the `next_cursor` from a previous answer, for the next matches.
 
-Returns each match's `slug`, `title`, `agency`, `revision` and page count.
+Returns each match's `slug`, `title`, `agency`, `revision` and page count,
+plus `next_cursor` when there are more. Up to 20 matches come back at a time.
 Pass a `slug` as `library` to `create_form`, `fill_form_from_context` or
 `prepare_form`. Free.
 
@@ -152,6 +163,8 @@ disagree.
 
 Returns a `job_id` and a `proposal_id`; poll `get_job` about every 20
 seconds. Billed as one context fill; the first 5 each month are free.
+
+Pass `dry_run=true` to rehearse this call without doing it: nothing is stored, charged or sent, and no AI is used. The answer says whether the real call would succeed or be refused, what it would cost, and what a rehearsal cannot check.
 
 ## get_proposal
 
@@ -193,6 +206,8 @@ and, when asked for, `package_url`. Free within the proposal's
 already-billed prepare, up to 10 commits per proposal. Checkboxes take
 `yes` or `no`; in a Yes/No pair, say yes to only one box.
 
+Pass `dry_run=true` to rehearse this call without doing it: nothing is stored, charged or sent, and no AI is used. The answer says whether the real call would succeed or be refused, what it would cost, and what a rehearsal cannot check.
+
 ## verify_form
 
 Check a filled form: required fields, allowed options, consistent choices,
@@ -203,6 +218,8 @@ text that fits, and empty signature boxes.
 
 Returns `complete`, `review_required` or `incomplete` with the
 issues found. Billed as one check; the first 5 each month are free.
+
+Pass `dry_run=true` to rehearse this call without doing it: nothing is stored, charged or sent, and no AI is used. The answer says whether the real call would succeed or be refused, what it would cost, and what a rehearsal cannot check.
 
 ## read_form
 
@@ -216,6 +233,8 @@ Returns every form box with its value and whether it is filled. Nothing is
 stored: read-back never keeps the file. Billed as one read-back; the first
 5 each month are free.
 
+Pass `dry_run=true` to rehearse this call without doing it: nothing is stored, charged or sent, and no AI is used. The answer says whether the real call would succeed or be refused, what it would cost, and what a rehearsal cannot check.
+
 ## suggest_mapping
 
 Propose which spreadsheet column fills which form field.
@@ -228,6 +247,8 @@ Returns a `mapping` of `{column: field_id}` and `unmapped_columns`. Billed
 as one context fill (5 free each month). `fill_batch` runs this
 automatically if called without a `mapping`, so it's billed even when you
 don't call it directly.
+
+Pass `dry_run=true` to rehearse this call without doing it: nothing is stored, charged or sent, and no AI is used. The answer says whether the real call would succeed or be refused, what it would cost, and what a rehearsal cannot check.
 
 ## fill_batch
 
@@ -245,14 +266,19 @@ one fill. On an account with no payment method, a batch with more rows than
 the free fills left is refused whole (`over_free_tier`, with `rows` and
 `remaining`).
 
+Pass `dry_run=true` to rehearse this call without doing it: nothing is stored, charged or sent, and no AI is used. The answer says whether the real call would succeed or be refused, what it would cost, and what a rehearsal cannot check.
+
 ## get_batch
 
 Progress of a `fill_batch` run.
 
 - `batch_id` (required).
+- `limit` (optional) and `cursor` (optional): rows come 100 at a time; pass
+  `next_cursor` as `cursor` to get the next 100.
 
 Returns `status`, `total`, `filled`, `failed`, a `download_url` per
-finished row (first 100), and a `zip_url` once the batch is done.
+finished row (100 at a time, with `next_cursor` when there are more), and a
+`zip_url` once the batch is done.
 
 ## send_fax
 
@@ -275,6 +301,8 @@ Returns `job_id`, `status` (`working`), `pages`, `price_cents`,
 `source_artifact_ids`. A repeat of the same artifact to the same
 destination within ten minutes returns the same job with
 `deduplicated: true`. Poll `get_fax` with the `job_id`.
+
+Pass `dry_run=true` to rehearse this call without doing it: nothing is stored, charged or sent, and no AI is used. The answer says whether the real call would succeed or be refused, what it would cost, and what a rehearsal cannot check.
 
 ## get_fax
 
