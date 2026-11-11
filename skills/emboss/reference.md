@@ -137,20 +137,31 @@ For a `prepare_form` job it also returns the `proposal_id`; for a
 
 ## find_form
 
-Search the library of blank government forms by name, number or alias
+Search the library of blank government forms by name, number, alias or place
 (`w9`, `W-9`, `form w 9` and `taxpayer identification` all find the same
-form).
+form). When a form belongs to a state or country, say so in the query or
+pass `region` or `country`.
 
-- `query` (required): the user's whole query. Send it once, not as the
-  user types: each search spends one of the account's rate-limit slots.
-- `country` (optional): narrow to one country.
-- `region` (optional): narrow to a state or region by code, such as `CA`.
-- `category` (optional): narrow to one kind of form.
+- `query` (required, may be empty): the user's whole query. Send it once,
+  not as the user types: each search spends one of the account's rate-limit
+  slots. Leave it empty and pass `region`, `country` or `category` to list
+  every form that fits.
+- `region` (optional): a state code such as `CA`. With a query, the state the
+  query is about (a state the query itself names wins); without one, lists
+  that state's forms and the shared certificates it accepts.
+- `country` (optional): a two-letter country code, `US` by default.
+- `category` (optional): one of the library's categories, such as
+  `tax: withholding certificate`.
 - `limit` (optional): matches per page, up to 50 (20 by default).
 - `cursor` (optional): the `next_cursor` from a previous answer, for the next matches.
 
-Returns each match's `slug`, `title`, `agency`, `revision` and page count,
-plus `next_cursor` when there are more. Up to 20 matches come back at a time.
+Returns each match's `slug`, `title`, `agency`, `number`, place (`country`,
+`region`, `level` and `accepted_by`), `category`, `edition`, `revision` and
+page count; a tax form asked for in a year the library does not hold also
+carries `year_note`. The answer carries a `note` when the library has no form
+for the state named (the federal form comes back) or needs to know the state
+(no matches come back until one is named): relay it to the user. Plus
+`next_cursor` when there are more. Up to 20 matches come back at a time.
 Pass a `slug` as `library` to `create_form`, `fill_form_from_context` or
 `prepare_form`. Free.
 
