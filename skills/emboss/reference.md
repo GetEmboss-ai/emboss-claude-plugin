@@ -137,12 +137,15 @@ For a `prepare_form` job it also returns the `proposal_id`; for a
 
 ## find_form
 
-Search the library of blank US federal forms by name, number or alias
+Search the library of blank government forms by name, number or alias
 (`w9`, `W-9`, `form w 9` and `taxpayer identification` all find the same
 form).
 
 - `query` (required): the user's whole query. Send it once, not as the
   user types: each search spends one of the account's rate-limit slots.
+- `country` (optional): narrow to one country.
+- `region` (optional): narrow to a state or region by code, such as `CA`.
+- `category` (optional): narrow to one kind of form.
 - `limit` (optional): matches per page, up to 50 (20 by default).
 - `cursor` (optional): the `next_cursor` from a previous answer, for the next matches.
 
