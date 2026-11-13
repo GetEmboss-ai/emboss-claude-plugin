@@ -303,8 +303,8 @@ otherwise), and a failed fax is not charged.
 - `to` (required): destination in E.164 form, for example `+15025551212`.
 - Exactly one of `sources` (a list of up to twenty entries, each an
   `artifact_id` with an optional `pages` range, comma-separated 1-based page
-  numbers as `n` or `n-m`, for example `1-3,7`; pay-per-call callers add an
-  `artifact_token` per entry, to fax several artifacts as one packet),
+  numbers as `n` or `n-m`, for example `1-3,7`, to fax several artifacts as
+  one packet),
   `artifact_id` (from any earlier result), `job_id` (a ready
   `fill_form_from_context` or `commit_proposal` job; its filled PDF is
   faxed), `form_id` (a ready form; its fillable PDF is faxed), `pdf_url`, or

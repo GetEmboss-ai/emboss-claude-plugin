@@ -2,11 +2,24 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "emboss",
   "displayName": "Emboss",
-  "version": "1.10.2",
+  "version": "1.10.3",
   "description": "Emboss turns any PDF form into a fillable one, fills it from data or supporting documents, reads a filled form back, and faxes the result to a US, Canadian or Mexican fax number.",
-  "author": { "name": "Edwin Orange", "email": "edwin@getemboss.ai", "url": "https://getemboss.ai" },
+  "author": {
+    "name": "Edwin Orange",
+    "email": "edwin@getemboss.ai",
+    "url": "https://getemboss.ai"
+  },
   "homepage": "https://getemboss.ai/docs/claude",
+  "privacyPolicyUrl": "https://getemboss.ai/privacy",
   "repository": "https://github.com/GetEmboss-ai/emboss-claude-plugin",
   "license": "MIT",
-  "keywords": ["pdf", "forms", "fillable", "form-filling", "acroform", "batch", "fax"]
+  "keywords": [
+    "pdf",
+    "forms",
+    "fillable",
+    "form-filling",
+    "acroform",
+    "batch",
+    "fax"
+  ]
 }

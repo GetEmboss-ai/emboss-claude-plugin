@@ -1,5 +1,7 @@
 name: validate
 on: [push, pull_request]
+# The repo-wide checks live here, not in a script: the Claude directory accepts only Markdown,
+# text, JSON, YAML and images in a plugin from an unverified organization.
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -8,4 +10,66 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: "22" }
       - run: npm install -g @anthropic-ai/claude-code
-      - run: bash scripts/check.sh
+      - name: manifests
+        shell: python
+        run: |
+          import json
+          p = json.load(open(".claude-plugin/plugin.json"))
+          m = json.load(open(".claude-plugin/marketplace.json"))
+          s = json.load(open(".mcp.json"))
+          r = json.load(open("server.json"))
+          assert p["name"] == "emboss", "plugin name must be emboss"
+          assert m["name"] == "getemboss", "marketplace name must be getemboss"
+          assert not p["name"].startswith(("claude-", "anthropic-")) and not m["name"].startswith(("claude-", "anthropic-"))
+          assert s["mcpServers"]["emboss"]["url"] == "https://api.getemboss.ai/mcp"
+          assert s["mcpServers"]["emboss"]["type"] == "http"
+          assert p["version"] == m["plugins"][0]["version"], "plugin.json and marketplace.json versions differ"
+          assert r["name"].startswith("io.github."), "server.json name must start with io.github."
+          assert r["remotes"][0]["url"] == "https://api.getemboss.ai/mcp", "server.json remote url must be exact"
+          print("manifests ok")
+      - name: allowed file types (Claude directory policy)
+        shell: python
+        run: |
+          import subprocess
+          ok = (".md", ".txt", ".json", ".yaml", ".yml", ".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico")
+          bad = []
+          for f in subprocess.check_output(["git", "ls-files"], text=True).split():
+              if f in ("LICENSE", ".gitignore"):
+                  continue
+              if not f.lower().endswith(ok):
+                  bad.append(f)
+              elif not f.lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico")):
+                  if open(f, "rb").read(2) == b"#!":
+                      bad.append(f)
+          assert not bad, "files the directory refuses: %s" % bad
+          print("file types ok")
+      - name: no em dashes
+        run: |
+          if grep -rIl $'\xe2\x80\x94' --exclude-dir=.git . ; then echo "em dash found"; exit 1; fi
+      - name: skills
+        shell: python
+        run: |
+          import re
+
+          def check_frontmatter(path, require_triggers=False):
+              t = open(path).read()
+              m = re.match(r"---\n(.*?)\n---\n", t, re.S)
+              assert m, path + " needs YAML frontmatter"
+              fm = dict(l.split(":", 1) for l in m.group(1).splitlines() if ":" in l)
+              name = fm["name"].strip(); desc = fm["description"].strip()
+              assert re.fullmatch(r"[a-z0-9-]{1,64}", name), name
+              assert "anthropic" not in name and "claude" not in name
+              assert 0 < len(desc) <= 1024 and "<" not in desc
+              if require_triggers:
+                  for trigger in ("fillable", "PDF form", "spreadsheet", "AcroForm"):
+                      assert trigger.lower() in desc.lower(), "description must mention " + trigger
+              assert len(t.splitlines()) <= 300, path + " must stay under 300 lines"
+
+          check_frontmatter("skills/emboss/SKILL.md", require_triggers=True)
+          check_frontmatter("skills/emboss-setup/SKILL.md")
+          print("skill ok")
+      # `claude plugin validate .` validates only the marketplace manifest when both
+      # .claude-plugin/plugin.json and .claude-plugin/marketplace.json are present in the
+      # same directory, so validate the plugin manifest separately by path.
+      - run: claude plugin validate . --strict
+      - run: claude plugin validate .claude-plugin/plugin.json --strict

@@ -33,8 +33,10 @@ Questions or issues: [edwin@getemboss.ai](mailto:edwin@getemboss.ai)
 
 ## Development
 
-Run the repo checks with:
+The repo checks run on every push in `.github/workflows/validate.yml` (manifests, the file
+types the Claude directory accepts, skills). To validate the plugin locally:
 
 ```
-bash scripts/check.sh
+claude plugin validate . --strict
+claude plugin validate .claude-plugin/plugin.json --strict
 ```
