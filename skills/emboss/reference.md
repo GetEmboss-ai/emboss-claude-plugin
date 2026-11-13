@@ -357,7 +357,7 @@ Build one PDF from several artifacts.
   a page selection (see above), omit for every page. `rotate` is `90`,
   `180`, or `270`.
 
-Returns the new `artifact_id`. A `download_url`: a link to the file that works for about an hour, no API key needed.
+Returns the new `artifact_id`. A `download_url`: a link to the file that works for about an hour.
 
 ### merge_pdf
 
@@ -366,7 +366,7 @@ Join whole PDFs in order.
 - `sources` (required): a list of `{artifact_id}`. For page selections, use
   `compose_pdf` instead.
 
-Returns the new `artifact_id`. A `download_url`: a link to the file that works for about an hour, no API key needed.
+Returns the new `artifact_id`. A `download_url`: a link to the file that works for about an hour.
 
 ### extract_pages
 
@@ -375,7 +375,7 @@ Keep only the named pages of one artifact.
 - `artifact_id` (required).
 - `pages` (required): a page selection (see above), for example `2,5-9`.
 
-Returns the new `artifact_id`. A `download_url`: a link to the file that works for about an hour, no API key needed.
+Returns the new `artifact_id`. A `download_url`: a link to the file that works for about an hour.
 
 ### delete_pages
 
@@ -384,7 +384,7 @@ Remove the named pages from one artifact; every other page stays in order.
 - `artifact_id` (required).
 - `pages` (required): a page selection (see above), for example `1-2,17`.
 
-Returns the new `artifact_id`. A `download_url`: a link to the file that works for about an hour, no API key needed.
+Returns the new `artifact_id`. A `download_url`: a link to the file that works for about an hour.
 
 ### reorder_pages
 
@@ -393,7 +393,7 @@ Reorder one artifact's pages.
 - `artifact_id` (required).
 - `order` (required): every page number, exactly once, in the new order.
 
-Returns the new `artifact_id`. A `download_url`: a link to the file that works for about an hour, no API key needed.
+Returns the new `artifact_id`. A `download_url`: a link to the file that works for about an hour.
 
 ### rotate_pages
 
@@ -404,7 +404,7 @@ Rotate pages of one artifact.
   selection (see above) and `degrees` one of `90`, `180`, `270`, added
   clockwise to each page's current rotation.
 
-Returns the new `artifact_id`. A `download_url`: a link to the file that works for about an hour, no API key needed.
+Returns the new `artifact_id`. A `download_url`: a link to the file that works for about an hour.
 
 ### inspect_pdf
 
@@ -426,7 +426,7 @@ artifact stays as it is.
 - `artifact_id` (required): the PDF to lock, usually the filled PDF from
   `fill_form`.
 
-Returns the new `artifact_id`, a `download_url` (a link to the file that works for about an hour, no API key needed) and a report: `fields_locked`,
+Returns the new `artifact_id`, a `download_url` (a link to the file that works for about an hour) and a report: `fields_locked`,
 `annotations_locked`, `pages` and `calculated_left_blank`. A locked form
 cannot be read back or checked, so run `read_form` or `verify_form` first.
 It refuses a digitally signed PDF (`pdf_signed`) and a dynamic XFA form
