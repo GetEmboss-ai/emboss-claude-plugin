@@ -89,7 +89,7 @@ Fill a form using answers pulled out of documents or notes.
   fill a new one, or a `slug` from `find_form`.
 - `context_text` (optional): pasted notes or text, up to 200,000 characters.
 - `context_urls` (optional): public https links to PDFs, Word docs,
-  spreadsheets, images, or text files, each up to 10 MB.
+  spreadsheets, images, or text files, each up to 25 MB.
 - `policy` (optional): `safe` (the default; write high and medium
   confidence answers) or `strict` (high only).
 - `retention` (optional): `ephemeral` or `account_default`; it applies only
@@ -254,7 +254,7 @@ Pass `dry_run=true` to rehearse this call without doing it: nothing is stored, c
 Propose which spreadsheet column fills which form field.
 
 - `form_id` (required).
-- `csv_text` (up to 2 MB) or `csv_url` (up to 10 MB), exactly one required. Only the header row
+- `csv_text` (up to 2 MB) or `csv_url` (up to 25 MB), exactly one required. Only the header row
   matters.
 
 Returns a `mapping` of `{column: field_id}` and `unmapped_columns`. Billed
@@ -269,7 +269,7 @@ Pass `dry_run=true` to rehearse this call without doing it: nothing is stored, c
 Fill the form once per spreadsheet row.
 
 - `form_id` (required).
-- `csv_text` (up to 2 MB) or `csv_url` (up to 10 MB), exactly one required, up to 1,000 rows.
+- `csv_text` (up to 2 MB) or `csv_url` (up to 25 MB), exactly one required, up to 1,000 rows.
 - `mapping` (optional): `{column: field_id}`. Omit it to use the suggested
   mapping (this runs `suggest_mapping` first, billed as one context fill).
 - `retention` (optional): accepted but changes nothing; the form keeps its own setting.
